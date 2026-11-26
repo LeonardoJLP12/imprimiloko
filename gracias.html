@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="robots" content="noindex, nofollow">
+  <title>¡Pago Confirmado! - Imprimiloko</title>
+  <link rel="icon" type="image/png" href="IMG/icono.jpeg">
+  <link rel="stylesheet" href="styles.css">
+  <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
+</head>
+<body style="display:flex; align-items:center; justify-content:center; min-height:100vh; padding:20px; text-align:center;">
+
+  <div class="modal-box" style="max-width:480px; margin:auto;">
+    <img src="IMG/icono.jpeg" alt="Logo Imprimiloko" style="width: 68px; height: 68px; border-radius: 50%; object-fit: contain; margin: 0 auto 16px; display: block; box-shadow: 0 4px 12px rgba(0,0,0,0.08);">
+    <div class="badge-mint" style="margin-bottom:12px;">PAGO VERIFICADO</div>
+    <h2 style="margin-bottom:10px;">¡Gracias por tu compra, <span id="clientName">Cliente</span>!</h2>
+    <p id="statusMessage" style="color:var(--text-muted); font-size:0.92rem; margin-bottom:20px;">
+      Estamos enviando el correo de confirmación y el acceso a tus PDF a <strong id="clientEmail">tu correo</strong>...
+    </p>
+    <a href="index.html" class="btn btn-primary btn-block">Volver a la página principal</a>
+  </div>
+  
+  <style>
+  body {
+    margin: 0;
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    box-sizing: border-box;
+  }
+</style>
+
+  <script>
+    // 1. Pega aquí tu Public Key (EmailJS -> Account)
+    emailjs.init('-2M3_cx8NjXWQ_T6V');
+
+    document.addEventListener('DOMContentLoaded', () => {
+      const rawOrder = localStorage.getItem('imprimiloko_last_order');
+      if (!rawOrder) return;
+
+      const order = JSON.parse(rawOrder);
+      document.getElementById('clientName').textContent = order.name;
+      document.getElementById('clientEmail').textContent = order.email;
+
+      // 2. Reemplaza TU_TEMPLATE_ID por el ID de tu plantilla (EmailJS -> Email Templates -> Settings)
+      emailjs.send('service_h0bjtyr', 'template_f6221gm', {
+        to_name: order.name,
+        to_email: order.email,
+        payment_method: order.method,
+        amount_paid: order.amount
+      })
+      .then(() => {
+        document.getElementById('statusMessage').innerHTML = 
+          `✅ ¡Listo! Hemos enviado el comprobante y el enlace de descarga de tus PDF a <strong>${order.email}</strong>.`;
+        localStorage.removeItem('imprimiloko_last_order');
+      })
+      .catch(() => {
+        document.getElementById('statusMessage').innerHTML = 
+          `Tu pago fue registrado. Si no ves el correo en unos minutos, escríbenos al WhatsApp <strong>+51 989 071 363</strong>.`;
+      });
+    });
+  </script>
+</body>
+</html>
