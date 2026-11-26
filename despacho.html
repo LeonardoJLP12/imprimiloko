@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="robots" content="noindex, nofollow">
+  <title>Panel de Despacho Manual - Imprimiloko</title>
+  <link rel="icon" type="image/png" href="IMG/icono.jpeg">
+  <link rel="stylesheet" href="styles.css">
+  <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
+</head>
+<body style="display:flex; align-items:center; justify-content:center; min-height:100vh; padding:20px;">
+
+  <!-- Pantalla de acceso con clave -->
+  <div id="loginBox" class="modal-box" style="max-width:400px; width:100%; text-align:center;">
+    <img src="IMG/icono.jpeg" alt="Logo Imprimiloko" style="width: 68px; height: 68px; border-radius: 50%; object-fit: contain; margin: 0 auto 16px; display: block; box-shadow: 0 4px 12px rgba(0,0,0,0.08);">
+    <div class="badge-mint" style="margin-bottom:10px;">ACCESO PRIVADO</div>
+    <h3 style="margin-bottom:8px;">Despacho Imprimiloko</h3>
+    <p style="font-size:0.88rem; color:var(--text-muted); margin-bottom:16px;">
+      Ingresa tu clave de administrador para enviar accesos por Yape / Plin.
+    </p>
+    
+    <!-- Contenedor relativo para el input y el botón del ojo -->
+    <div style="position:relative; margin-bottom:12px;">
+      <input type="password" id="adminPass" placeholder="Contraseña" style="width:100%; padding:12px 42px 12px 12px; border:1px solid var(--border-light); border-radius:10px; box-sizing:border-box;">
+      <button type="button" id="togglePassBtn" aria-label="Mostrar u ocultar contraseña" style="position:absolute; right:12px; top:50%; transform:translateY(-50%); background:none; border:none; cursor:pointer; padding:4px; color:#666666; display:flex; align-items:center;">
+        <!-- Ícono Ojo Abierto (Mostrar) -->
+        <svg id="eyeOpenIcon" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+          <circle cx="12" cy="12" r="3"></circle>
+        </svg>
+        <!-- Ícono Ojo Tachado (Ocultar) -->
+        <svg id="eyeClosedIcon" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:none;">
+          <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path>
+          <line x1="1" y1="1" x2="23" y2="23"></line>
+        </svg>
+      </button>
+    </div>
+
+    <button id="loginBtn" class="btn btn-primary btn-block">Entrar</button>
+    <p id="loginError" style="color:#d93025; font-size:0.82rem; margin-top:10px; display:none;">Contraseña incorrecta.</p>
+  </div>
+
+  <!-- Formulario de envío (oculto hasta poner la clave) -->
+  <div id="dispatchBox" class="modal-box" style="max-width:440px; width:100%; display:none;">
+    <div class="badge-mint" style="margin-bottom:10px;">ENVÍO VERIFICADO</div>
+    <h3 style="margin-bottom:6px;">Enviar Mega Pack por Correo</h3>
+    <p style="font-size:0.86rem; color:var(--text-muted); margin-bottom:18px;">
+      Usa este formulario solo después de confirmar el abono en Yape o Plin.
+    </p>
+
+    <form id="manualDispatchForm">
+      <div style="margin-bottom:12px;">
+        <label style="display:block; font-size:0.85rem; font-weight:600; margin-bottom:4px;">Nombre del cliente</label>
+        <input type="text" id="clientName" required placeholder="Ej. María Gómez" style="width:100%; padding:11px; border:1px solid var(--border-light); border-radius:10px; box-sizing:border-box;">
+      </div>
+
+      <div style="margin-bottom:12px;">
+        <label style="display:block; font-size:0.85rem; font-weight:600; margin-bottom:4px;">Correo electrónico del cliente</label>
+        <input type="email" id="clientEmail" required placeholder="cliente@gmail.com" style="width:100%; padding:11px; border:1px solid var(--border-light); border-radius:10px; box-sizing:border-box;">
+      </div>
+
+      <div style="display:flex; gap:10px; margin-bottom:18px;">
+        <div style="flex:1;">
+          <label style="display:block; font-size:0.85rem; font-weight:600; margin-bottom:4px;">Método</label>
+          <input type="text" id="payMethod" value="Yape / Plin" readonly style="width:100%; padding:11px; border:1px solid var(--border-light); border-radius:10px; background:#f5f5f5; color:#555555; box-sizing:border-box;">
+        </div>
+        <div style="flex:1;">
+          <label style="display:block; font-size:0.85rem; font-weight:600; margin-bottom:4px;">Monto pagado</label>
+          <input type="text" id="payAmount" value="S/ 24.90" required style="width:100%; padding:11px; border:1px solid var(--border-light); border-radius:10px; box-sizing:border-box;">
+        </div>
+      </div>
+
+      <button type="submit" id="sendBtn" class="btn btn-primary btn-block">Enviar Pack al Correo</button>
+    </form>
+
+    <div id="dispatchStatus" style="margin-top:14px; font-size:0.88rem; text-align:center;"></div>
+  </div>
+
+  <script>
+    // 1. Pega aquí tu Public Key de EmailJS (Account)
+    emailjs.init('-2M3_cx8NjXWQ_T6V');
+
+    // 2. Cambia esta contraseña por la que tú elijas para entrar al panel
+    const CLAVE_SECRETA = 'Imprimiloko2026';
+
+    const loginBox = document.getElementById('loginBox');
+    const dispatchBox = document.getElementById('dispatchBox');
+    const loginBtn = document.getElementById('loginBtn');
+    const adminPass = document.getElementById('adminPass');
+    const loginError = document.getElementById('loginError');
+
+    // Lógica del ojito para mostrar/ocultar contraseña
+    const togglePassBtn = document.getElementById('togglePassBtn');
+    const eyeOpenIcon = document.getElementById('eyeOpenIcon');
+    const eyeClosedIcon = document.getElementById('eyeClosedIcon');
+
+    togglePassBtn.addEventListener('click', () => {
+      const isPassword = adminPass.type === 'password';
+      adminPass.type = isPassword ? 'text' : 'password';
+      eyeOpenIcon.style.display = isPassword ? 'none' : 'block';
+      eyeClosedIcon.style.display = isPassword ? 'block' : 'none';
+    });
+
+    function checkAccess() {
+      if (adminPass.value === CLAVE_SECRETA) {
+        loginBox.style.display = 'none';
+        dispatchBox.style.display = 'block';
+      } else {
+        loginError.style.display = 'block';
+      }
+    }
+
+    loginBtn.addEventListener('click', checkAccess);
+    adminPass.addEventListener('keypress', (e) => {
+      if (e.key === 'Enter') checkAccess();
+    });
+
+    document.getElementById('manualDispatchForm').addEventListener('submit', (e) => {
+      e.preventDefault();
+      const sendBtn = document.getElementById('sendBtn');
+      const statusDiv = document.getElementById('dispatchStatus');
+
+      const name = document.getElementById('clientName').value.trim();
+      const email = document.getElementById('clientEmail').value.trim();
+      const method = document.getElementById('payMethod').value;
+      const amount = document.getElementById('payAmount').value.trim();
+
+      sendBtn.disabled = true;
+      sendBtn.textContent = 'Enviando correo...';
+      statusDiv.innerHTML = '';
+
+      emailjs.send('service_h0bjtyr', 'template_f6221gm', {
+        to_name: name,
+        to_email: email,
+        payment_method: method,
+        amount_paid: amount
+      })
+      .then(() => {
+        statusDiv.innerHTML = `
+          <span style="color:#0f9d58; font-weight:600; display:block;">✅ ¡Enviado con éxito a ${email}!</span>
+          <span style="color:#5c5c5c; font-size:0.85rem; display:block; margin-top:4px;"> Si no logras ver el correo, recuerda revisar su carpeta de <strong>Spam</strong> o correo no deseado.</span>
+        `;
+        document.getElementById('manualDispatchForm').reset();
+        document.getElementById('payMethod').value = 'Yape / Plin';
+        document.getElementById('payAmount').value = 'S/ 24.90';
+      })
+      .catch(() => {
+        statusDiv.innerHTML = `<span style="color:#d93025;">❌ Hubo un error al enviar. Revisa tu Public Key o conexión.</span>`;
+      })
+      .finally(() => {
+        sendBtn.disabled = false;
+        sendBtn.textContent = 'Enviar Pack al Correo';
+      });
+    });
+  </script>
+</body>
+</html>
